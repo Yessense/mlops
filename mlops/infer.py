@@ -21,13 +21,11 @@ def main():
     y_test_pred = loaded_model.predict(X_test)
 
     test_acc = accuracy_score(y_test, y_test_pred)
-    print(test_acc)
-    print(
-        precision_score(y_test, y_test_pred, average="macro")
-    ) 
-    print(
-        f1_score(y_test, y_test_pred, average="macro")
-    )  
+    prec_score = precision_score(y_test, y_test_pred, average="macro")
+    f1_sc = f1_score(y_test, y_test_pred, average="macro")
+    print(f"Test accuracy:   {test_acc: 0.3f}")
+    print(f"Precision score: {prec_score: 0.3f}")
+    print(f"F1 score:        {f1_sc: 0.3f}")
     results_df = pd.DataFrame({"Predictions": y_test_pred})
 
     results_df.to_csv("results.csv", index=False)
