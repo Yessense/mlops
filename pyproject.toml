@@ -24,7 +24,12 @@ priority = "explicit"
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.4.0"
 dvc = "^3.30.3"
+dvc-gdrive = "^2.20.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 90
+target-version = ["py310"]

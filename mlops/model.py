@@ -1,22 +1,13 @@
 from typing import Any
-import lightning.pytorch as pl
-from lightning.pytorch.utilities.types import STEP_OUTPUT, OptimizerLRScheduler
-import torch
-from torch import nn
-import einops
-import lightning as L
-from torch.nn import functional as F
-from torchmetrics.classification import MulticlassAccuracy
 
+import lightning as L
 import torch
 import torch.nn.functional as F
-
-from torch import nn
-from torch import Tensor
-from einops import rearrange, reduce, repeat
-from einops.layers.torch import Rearrange, Reduce
-from torch.nn.modules.normalization import LayerNorm
-from torchvision import transforms
+from einops import repeat
+from einops.layers.torch import Rearrange
+from lightning.pytorch.utilities.types import OptimizerLRScheduler
+from torch import Tensor, nn
+from torchmetrics.classification import MulticlassAccuracy
 
 
 class PatchEmbedding(nn.Module):
@@ -31,11 +22,18 @@ class PatchEmbedding(nn.Module):
         super().__init__()
         self.projection = nn.Sequential(
             # using a conv layer instead of a linear one -> performance gains
-            nn.Conv2d(in_channels, emb_size, kernel_size=self.patch_size, stride=self.patch_size),
+            nn.Conv2d(
+                in_channels,
+                emb_size,
+                kernel_size=self.patch_size,
+                stride=self.patch_size,
+            ),
             Rearrange("b e (h) (w) -> b (h w) e"),
         )
         img_size = (img_size, img_size)
-        self.num_patches = (img_size[1] // self.patch_size[1]) * (img_size[0] // self.patch_size[0])
+        self.num_patches = (img_size[1] // self.patch_size[1]) * (
+            img_size[0] // self.patch_size[0]
+        )
         self.cls_token = nn.Parameter(torch.randn(1, 1, emb_size))
         self.positions = nn.Parameter(
             torch.randn((img_size[0] // patch_size) ** 2 + 1, emb_size)
@@ -216,7 +214,6 @@ class ViT(nn.Module):
         )
 
     def forward(self, x):
-        B = x.shape[0]
         # Часть 1
         x = self.patch_embed(x)
 
@@ -230,7 +227,7 @@ class ViT(nn.Module):
 
 
 class ViTLightningModule(L.LightningModule):
-    def __init__(self, num_classes: int = 101, lr: float = 0.003) -> None:
+    def __init__(self, num_classes: int = 10, lr: float = 0.003) -> None:
         super().__init__()
 
         self.num_classes = num_classes
@@ -259,7 +256,6 @@ class ViTLightningModule(L.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         x, y_true = batch
-
 
         y_pred = self(x)
 
