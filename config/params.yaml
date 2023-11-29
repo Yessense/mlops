@@ -1,0 +1,24 @@
+data:
+  path: ./data
+model:
+  num_classes: 10
+training:
+  batch_size: 64
+  num_workers: 4
+  lr: 0.003
+  epochs: 1
+  gpu_id: 0
+  seed: 1702
+logging:
+  project: vit
+  name: vit_1
+  wandb_log_dir: ${hydra:run.dir}/wandb
+  ml_flow_uri: file:${hydra:run.dir}/ml-runs
+  monitor: val acc
+  save_top_k: 3
+  logging_interval: epoch
+
+hydra:
+  callbacks:
+    git_logging:
+      _target_: mlops.hydra_callbacks.GitInfo

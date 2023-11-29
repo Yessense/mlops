@@ -15,6 +15,12 @@ lightning = "^2.1.2"
 einops = "^0.7.0"
 wandb = "^0.16.0"
 six = "^1.16.0"
+mlflow = "^2.8.1"
+gitpython = "^3.1.40"
+onnx = "^1.15.0"
+fastapi = "^0.104.1"
+onnxruntime = "^1.16.3"
+uvicorn = "^0.24.0.post1"
 
 [[tool.poetry.source]]
 name = "pytorch"

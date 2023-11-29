@@ -3,8 +3,7 @@ from typing import Any
 import lightning as L
 import torch
 import torch.nn.functional as F
-from einops import repeat
-from einops.layers.torch import Rearrange
+from einops import repeat, rearrange
 from lightning.pytorch.utilities.types import OptimizerLRScheduler
 from torch import Tensor, nn
 from torchmetrics.classification import MulticlassAccuracy
@@ -19,6 +18,7 @@ class PatchEmbedding(nn.Module):
         img_size: int = 224,
     ):
         self.patch_size = (patch_size, patch_size)
+        self.emb_size = emb_size
         super().__init__()
         self.projection = nn.Sequential(
             # using a conv layer instead of a linear one -> performance gains
@@ -28,7 +28,6 @@ class PatchEmbedding(nn.Module):
                 kernel_size=self.patch_size,
                 stride=self.patch_size,
             ),
-            Rearrange("b e (h) (w) -> b (h w) e"),
         )
         img_size = (img_size, img_size)
         self.num_patches = (img_size[1] // self.patch_size[1]) * (
@@ -42,6 +41,9 @@ class PatchEmbedding(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         b, _, _, _ = x.shape
         x = self.projection(x)
+        x = torch.transpose(x, -1, 1)
+        x = x.reshape(b, -1, self.emb_size)
+        # print(x.shape)
         cls_tokens = repeat(self.cls_token, "() n e -> b n e", b=b)
         # prepend the cls token to the input
         x = torch.cat([cls_tokens, x], dim=1)
