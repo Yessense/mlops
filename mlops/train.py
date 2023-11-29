@@ -1,27 +1,30 @@
-import pickle
+import lightning as L
+from lightning.pytorch.callbacks import LearningRateMonitor, ModelCheckpoint
+from lightning.pytorch.loggers import WandbLogger
 
-from sklearn import datasets
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
+from .data import Caltech101DataModule
+from .model import ViTLightningModule
 
 
-def main():
-    # Load the Iris dataset
-    iris = datasets.load_iris()
-    X = iris.data
-    y = iris.target
+def vit_train():
+    dm = Caltech101DataModule()
+    model = ViTLightningModule()
 
-    # Split the dataset
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.5, stratify=y, random_state=42
+    wandb_log = WandbLogger(project="vit", name="vit_1", save_dir="./wandb")
+
+    checkpoint = ModelCheckpoint(save_top_k=3, monitor="val acc")
+    lr_monitor = LearningRateMonitor(logging_interval="epoch")
+
+    trainer = L.Trainer(
+        max_epochs=30,
+        accelerator="gpu",
+        devices=[0],
+        logger=wandb_log,
+        callbacks=[checkpoint, lr_monitor],
     )
-
-    # Initialize and train the logistic regression model
-    clf = LogisticRegression(max_iter=1000).fit(X_train, y_train)
-
-    with open("model.pkl", "wb") as file:
-        pickle.dump(clf, file)
+    trainer.fit(model=model, datamodule=dm)
 
 
 if __name__ == "__main__":
-    main()
+    L.seed_everything(1702)
+    vit_train()
