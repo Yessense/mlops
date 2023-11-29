@@ -1,3 +1,3 @@
 # MLOps
 
-Homework 1 for MLOps course.
+Homework 1-2 for MLOps course.
